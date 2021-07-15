@@ -634,7 +634,7 @@ class XTemplate {
 					// NW 4 Oct 2002 - Added isset and is_array check to avoid NOTICE messages
 					// JC 17 Oct 2002 - Changed EMPTY to stlen=0
 					//                if (empty($var[$v1])) { // this line would think that zeros(0) were empty - which is not true
-					if (!isset($var[$v1]) || (!is_array($var[$v1]) && strlen($var[$v1]) == 0)) {
+					if (!isset($var[$v1]) || (!static::is_array_like($var[$v1]) && strlen($var[$v1]) == 0)) {
 
 						// Check for constant, when variable not assigned
 						if (defined($v1)) {
@@ -1013,7 +1013,9 @@ class XTemplate {
 					$blocks[$cur_block_name] = isset($blocks[$cur_block_name]) ? $blocks[$cur_block_name] . $content : $content;
 
 					// add {_BLOCK_.blockname} string to parent block
-					$blocks[$parent_name] .= str_replace('\\', '', $this->tag_start_delim) . '_BLOCK_.' . $cur_block_name . str_replace('\\', '', $this->tag_end_delim);
+                    if (isset($blocks[$parent_name])) {
+                        $blocks[$parent_name] .= str_replace('\\', '', $this->tag_start_delim) . '_BLOCK_.' . $cur_block_name . str_replace('\\', '', $this->tag_end_delim);
+                    }
 
 					// store sub block names for autoresetting and recursive parsing
 					$this->sub_blocks[$parent_name][] = $cur_block_name;
@@ -1028,7 +1030,9 @@ class XTemplate {
 					$parent_name = implode('.', $block_names);
 
 					// add rest of block to parent block
-					$blocks[$parent_name] .= $content;
+                    if (isset($blocks[$parent_name])) {
+						$blocks[$parent_name] .= $content;
+					}
 				}
 			} else {
 
@@ -1297,6 +1301,10 @@ class XTemplate {
 			var_dump(func_get_args());
 			echo '</pre>';
 		}
+	}
+
+	public static function is_array_like(&$val) {
+		return is_array($val) || $val instanceof ArrayAccess || $val instanceof ArrayObject;
 	}
 } /* end of XTemplate class. */
 
